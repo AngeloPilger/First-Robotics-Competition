@@ -1,0 +1,159 @@
+package frc.robot;
+
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
+import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkMax;
+
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+public class Robot extends TimedRobot {
+
+  private Joystick Joy = new Joystick(0);
+
+  private CANSparkMax MDD = new CANSparkMax(2, MotorType.kBrushless); // Motor dianteiro direito
+  private CANSparkMax MTE = new CANSparkMax(4, MotorType.kBrushless); // Motor traseiro esquerdo
+  private CANSparkMax MDE = new CANSparkMax(5, MotorType.kBrushless); // Motor dianteiro esquerdo (seguidor)
+  private CANSparkMax MTD = new CANSparkMax(3, MotorType.kBrushless); // Motor traseiro direito (seguidor)
+
+  private VictorSPX ColetorSever = new VictorSPX(6);  // Motor do braço
+  private VictorSPX ColetorSever2 = new VictorSPX(7); // Motor da coleta 1
+  private VictorSPX ColetorSever3 = new VictorSPX(8); // Motor da coleta 2
+  private VictorSPX ColetorSever4 = new VictorSPX(9); // Motor tecnil
+
+  private DigitalInput limitSwitch = new DigitalInput(0);  // Sensor de subida
+  private DigitalInput limitSwitch2 = new DigitalInput(1); // Sensor de descida
+  private DigitalInput limitSwitch3 = new DigitalInput(2); // Sensor da coleta
+  private DigitalInput limitSwitch4 = new DigitalInput(3); // Sensor do tecnil
+
+  private Timer timer = new Timer();
+
+  private boolean isTimer1Active = false;
+
+  @Override
+  public void robotInit() {
+
+    MTD.follow(MDD);
+    MTE.follow(MDE);
+
+    MTE.setInverted(true);
+    MDE.setInverted(true);
+  }
+
+  @Override
+  public void robotPeriodic() {
+    SmartDashboard.putBoolean("Sensor braco ERGUIDO", limitSwitch.get());
+    SmartDashboard.putBoolean("Sensor braco DESCIDO", limitSwitch2.get());
+    SmartDashboard.putBoolean("Sensor COLETA", limitSwitch3.get());
+    SmartDashboard.putBoolean("Sensor TECNIL", limitSwitch4.get());
+  }
+
+  @Override
+  public void autonomousInit() {}
+
+  @Override
+  public void autonomousPeriodic() {}
+
+  @Override
+  public void teleopInit() {}
+
+  @Override
+  public void teleopPeriodic() {
+    controlMovement();
+    controlCollector();
+    controlArm();
+    controlNoteLimiter();
+  }
+
+  private void controlMovement() {
+    double GetD = Joy.getRawAxis(1); // Aceleração
+    double GetC = Joy.getRawAxis(2); // Rotação
+    double GetA = Joy.getRawAxis(3); // Marcha
+    boolean GetB = Joy.getRawButton(2); // Freio
+
+    if (GetB == false) {
+      MTE.set(((GetD - (GetC / 2.6)) * (GetA)));
+      MDD.set(((GetD + (GetC / 2.6)) * (GetA)));
+      MDE.set(((GetD - (GetC / 2.6)) * (GetA)));
+      MTD.set(((GetD + (GetC / 2.6)) * (GetA)));
+    } else {
+      MTE.set(0);
+      MDD.set(0);
+      MDE.set(0);
+      MTD.set(0);
+    }
+  }
+
+  private void controlCollector() {
+    boolean Get1 = Joy.getRawButton(1); // Botão da coleta
+
+    if (Get1 && limitSwitch3.get()) {
+      ColetorSever2.set(ControlMode.PercentOutput, 0.7);
+      ColetorSever3.set(ControlMode.PercentOutput, 0.7);
+    } else {
+      ColetorSever2.set(ControlMode.PercentOutput, 0);
+      ColetorSever3.set(ControlMode.PercentOutput, 0);
+    }
+  }
+
+  private void controlArm() {
+    double Get3 = Joy.getPOV(1); // Botão para descer o braço
+    double Get4 = Joy.getPOV(2); // Botão para subir o braço
+    
+    if (Get4 < 0.01 && limitSwitch.get()) {
+      ColetorSever.set(ControlMode.PercentOutput, 1.0);
+    } else if (Get3 < 0.01 && limitSwitch2.get()) {
+      ColetorSever.set(ControlMode.PercentOutput, -1.0);
+    } else {
+      ColetorSever.set(ControlMode.PercentOutput, 0);
+    }
+  }
+
+  private void controlNoteLimiter() {
+    if (!limitSwitch2.get()) {
+      if (!isTimer1Active) {
+        timer.start();
+        isTimer1Active = true;
+      }
+      if (timer.get() < 0.17) {
+        ColetorSever4.set(ControlMode.PercentOutput, 0.5);
+      } else {
+        ColetorSever4.set(ControlMode.PercentOutput, 0);
+        timer.stop();
+        isTimer1Active = false;
+      }
+    } else {
+      ColetorSever4.set(ControlMode.PercentOutput, 0);
+      timer.stop();
+      timer.reset();
+      isTimer1Active = false;
+    }
+    if (limitSwitch2.get()) {
+      while (limitSwitch4.get()) {
+        ColetorSever4.set(ControlMode.PercentOutput, -0.5);
+      }
+    }
+  }
+
+  @Override
+  public void disabledInit() {}
+
+  @Override
+  public void disabledPeriodic() {}
+
+  @Override
+  public void testInit() {}
+
+  @Override
+  public void testPeriodic() {}
+
+  @Override
+  public void simulationInit() {}
+
+  @Override
+  public void simulationPeriodic() {}
+}
