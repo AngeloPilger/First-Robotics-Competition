@@ -1,0 +1,81 @@
+package frc.robot;
+
+import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkMax;
+
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.TimedRobot;
+
+public class Robot extends TimedRobot {
+
+  private Joystick Joy = new Joystick(0);
+
+  private CANSparkMax MDD = new CANSparkMax(2, MotorType.kBrushless); // Motor dianteiro direito
+  private CANSparkMax MTE = new CANSparkMax(4, MotorType.kBrushless); // Motor traseiro esquerdo
+  private CANSparkMax MDE = new CANSparkMax(5, MotorType.kBrushless); // Motor dianteiro esquerdo (seguidor)
+  private CANSparkMax MTD = new CANSparkMax(3, MotorType.kBrushless); // Motor traseiro direito (seguidor)
+
+  @Override
+  public void robotInit() {
+
+    MTD.follow(MDD);
+    MTE.follow(MDE);
+
+    MTE.setInverted(true);
+    MDE.setInverted(true);
+  }
+
+  @Override
+  public void robotPeriodic() {}
+
+  @Override
+  public void autonomousInit() {}
+
+  @Override
+  public void autonomousPeriodic() {}
+
+  @Override
+  public void teleopInit() {}
+
+  @Override
+  public void teleopPeriodic() {
+    controlMovement();
+  }
+
+  private void controlMovement() {
+    double GetD = Joy.getRawAxis(1); // Aceleração
+    double GetC = Joy.getRawAxis(2); // Rotação
+    double GetA = Joy.getRawAxis(3); // Marcha
+    boolean Get2 = Joy.getRawButton(2); // Freio
+
+    if (Get2 == false) {
+      MTE.set(((GetD - (GetC / 2.6)) * (GetA)));
+      MDD.set(((GetD + (GetC / 2.6)) * (GetA)));
+      MDE.set(((GetD - (GetC / 2.6)) * (GetA)));
+      MTD.set(((GetD + (GetC / 2.6)) * (GetA)));
+    } else {
+      MTE.set(0);
+      MDD.set(0);
+      MDE.set(0);
+      MTD.set(0);
+    }
+  }
+
+  @Override
+  public void disabledInit() {}
+
+  @Override
+  public void disabledPeriodic() {}
+
+  @Override
+  public void testInit() {}
+
+  @Override
+  public void testPeriodic() {}
+
+  @Override
+  public void simulationInit() {}
+
+  @Override
+  public void simulationPeriodic() {}
+}
