@@ -1,0 +1,49 @@
+package frc.robot.subsystems;
+
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+public class LimiterSubsystem extends SubsystemBase{
+  
+  private VictorSPX LimitMotor = new VictorSPX(9); 
+
+  private DigitalInput tecniLimitSwitch;
+  private DigitalInput downLimitSwitch;
+
+  private Timer timer = new Timer();
+  private boolean isTimer1Active = false;
+
+  public void sensorLimiter(int downLimitSwitchPort, int tecniLimitSwitchPort) {
+    this.tecniLimitSwitch = new DigitalInput(tecniLimitSwitchPort);
+    this.downLimitSwitch = new DigitalInput(downLimitSwitchPort);
+  }
+
+  public void noteLimiter() {
+    if (!downLimitSwitch.get()) {
+      if (!isTimer1Active) {
+        timer.start();
+        isTimer1Active = true;
+      }
+      if (timer.get() < 0.17) {
+        LimitMotor.set(ControlMode.PercentOutput, 0.5);
+      } else {
+        LimitMotor.set(ControlMode.PercentOutput, 0);
+        timer.stop();
+        isTimer1Active = false;
+      }
+    } else {
+      LimitMotor.set(ControlMode.PercentOutput, 0);
+      timer.stop();
+      timer.reset();
+      isTimer1Active = false;
+    }
+    if (downLimitSwitch.get()) {
+      while (tecniLimitSwitch.get()) {
+        LimitMotor.set(ControlMode.PercentOutput, -0.5);
+      }
+    }
+  }
+}

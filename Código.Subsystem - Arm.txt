@@ -1,0 +1,28 @@
+package frc.robot.subsystems;
+
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.DigitalInput;
+
+public class ArmSubsystem extends SubsystemBase {
+
+  private VictorSPX ArmMotor = new VictorSPX(6);
+  private DigitalInput upLimitSwitch;
+  private DigitalInput downLimitSwitch;
+
+  public void armSensors(int upLimitSwitchPort, int downLimitSwitchPort) {
+    this.upLimitSwitch = new DigitalInput(upLimitSwitchPort);
+    this.downLimitSwitch = new DigitalInput(downLimitSwitchPort);
+  }
+
+  public void moveArm(int pov) {
+    if (pov == 0 && upLimitSwitch.get()) {
+      ArmMotor.set(ControlMode.PercentOutput, 0.7); 
+    } else if (pov == 180 && downLimitSwitch.get()) {
+      ArmMotor.set(ControlMode.PercentOutput, -0.5); 
+    } else {
+      ArmMotor.set(ControlMode.PercentOutput, 0);
+    }
+  }
+}

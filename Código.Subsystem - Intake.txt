@@ -1,0 +1,30 @@
+package frc.robot.subsystems; 
+
+import com.ctre.phoenix.motorcontrol.ControlMode; 
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;  
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.DigitalInput;
+
+public class IntakeSubsystem extends SubsystemBase {
+
+  private VictorSPX IntakeMotor = new VictorSPX(7);
+  private VictorSPX IntakeMotor2 = new VictorSPX(8);
+  private DigitalInput collectSwitch;
+
+  public void intakeSensors(int collectSwitchPort) {
+    this.collectSwitch = new DigitalInput(collectSwitchPort);
+  }
+
+  public void collect_pass(boolean collect, boolean pass) {
+    if (collect && collectSwitch.get()) {
+      IntakeMotor.set(ControlMode.PercentOutput, 0.6);
+      IntakeMotor2.set(ControlMode.PercentOutput, 0.6);
+    } else if(pass && collectSwitch.get()) {
+      IntakeMotor.set(ControlMode.PercentOutput, -0.5);
+      IntakeMotor2.set(ControlMode.PercentOutput, -0.5);
+    } else {
+      IntakeMotor.set(ControlMode.PercentOutput, 0);
+      IntakeMotor2.set(ControlMode.PercentOutput, 0);
+    }
+  }
+}

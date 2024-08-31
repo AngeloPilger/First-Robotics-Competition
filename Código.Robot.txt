@@ -1,0 +1,70 @@
+package frc.robot;
+
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.TimedRobot;
+import frc.robot.subsystems.ArmSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.LimiterSubsystem;
+import frc.robot.subsystems.SensorSubsystem;
+import frc.robot.subsystems.DrivetrainSubsystem;
+
+public class Robot extends TimedRobot {
+
+  private Joystick Joy = new Joystick(0);
+
+  private final DrivetrainSubsystem drivetrain = new DrivetrainSubsystem();
+  private final ArmSubsystem Arm = new ArmSubsystem();
+  private final IntakeSubsystem intake = new IntakeSubsystem();
+  private final LimiterSubsystem limiter = new LimiterSubsystem();
+  private final SensorSubsystem sensors = new SensorSubsystem();
+
+  @Override
+  public void robotInit() {
+    sensors.periodic(); 
+  }
+
+  @Override
+  public void robotPeriodic() {}
+
+  @Override
+  public void autonomousInit() {}
+
+  @Override
+  public void autonomousPeriodic() {}
+
+  @Override
+  public void teleopInit() {}
+
+  @Override
+  public void teleopPeriodic() {
+    controlMovement();
+    controlIntake();
+    controlArm();
+    controlNoteLimiter();
+  }
+
+  private void controlMovement() {
+    double speed = Joy.getRawAxis(1);
+    double rotation = Joy.getRawAxis(2);
+    double multiplier = Joy.getRawAxis(3);
+    boolean Get2 = Joy.getRawButton(2);
+
+    drivetrain.drive(speed, rotation, multiplier, Get2);
+  }
+
+  private void controlIntake() {
+    boolean Get1 = Joy.getRawButton(1);
+    boolean Get3 = Joy.getRawButton(3);
+
+    intake.collect_pass(Get1, Get3);
+  }
+
+  private void controlArm() {
+    int pov = Joy.getPOV(0);
+    Arm.moveArm(pov);
+  }
+
+  private void controlNoteLimiter() {
+    limiter.noteLimiter();
+  }
+}

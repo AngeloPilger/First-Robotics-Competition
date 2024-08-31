@@ -1,0 +1,35 @@
+package frc.robot.subsystems;
+
+import com.revrobotics.CANSparkMax;  
+import com.revrobotics.CANSparkLowLevel.MotorType;  
+import edu.wpi.first.wpilibj2.command.SubsystemBase; 
+
+public class DrivetrainSubsystem extends SubsystemBase {
+
+  private CANSparkMax MDD = new CANSparkMax(2, MotorType.kBrushless);
+  private CANSparkMax MTE = new CANSparkMax(4, MotorType.kBrushless);
+  private CANSparkMax MDE = new CANSparkMax(5, MotorType.kBrushless);
+  private CANSparkMax MTD = new CANSparkMax(3, MotorType.kBrushless);
+
+  public DrivetrainSubsystem() {
+    MTD.follow(MDD);  
+    MTE.follow(MDE);  
+    
+    MTE.setInverted(true); 
+    MDE.setInverted(true);
+  }
+
+  public void drive(double speed, double rotation, double multiplier, boolean brake) {
+    if (!brake) {
+      MTE.set(((-speed - (rotation / 2.6)) * multiplier)); 
+      MDD.set(((speed + (-rotation / 2.6)) * multiplier));  
+      MDE.set(((-speed - (rotation / 2.6)) * multiplier));  
+      MTD.set(((speed + (-rotation / 2.6)) * multiplier));  
+    } else {
+      MTE.set(0); 
+      MDD.set(0);  
+      MDE.set(0);  
+      MTD.set(0);  
+    }
+  }
+}
