@@ -1,0 +1,41 @@
+package frc.robot;
+
+import frc.robot.subsystems.ArmSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.NoteLimiterSubsystem;
+import frc.robot.subsystems.SensorSubsystem;
+
+public class RobotContainer {
+
+  private final SensorSubsystem sensorSubsystem = new SensorSubsystem(); // Subsystem de sensores
+  private final ArmSubsystem armSubsystem = new ArmSubsystem(sensorSubsystem); // Subsystem do braço
+  private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem(sensorSubsystem); // Subsystem de coleta
+  private final NoteLimiterSubsystem limiterSubsystem = new NoteLimiterSubsystem(sensorSubsystem); // Subsystem de limitação
+
+  public RobotContainer() {
+    // Construtor da classe; configura as ligações de botões
+    configureButtonBindings();
+  }
+
+  private void configureButtonBindings() {
+    // Aqui você pode configurar ligações de botões para comandos (por exemplo, usando o método .whenPressed())
+    // Por enquanto, este método está vazio e pode ser implementado conforme necessário.
+  }
+
+  // Métodos para acessar os subsistemas
+  public ArmSubsystem getArmSubsystem() {
+    return armSubsystem; // Retorna o subsistema do braço
+  }
+
+  public IntakeSubsystem getIntakeSubsystem() {
+    return intakeSubsystem; // Retorna o subsistema de coleta
+  }
+
+  public NoteLimiterSubsystem getLimiterSubsystem() {
+    return limiterSubsystem; // Retorna o subsistema de limitação
+  }
+
+  public SensorSubsystem getSensorSubsystem() {
+    return sensorSubsystem; // Retorna o subsistema de sensores
+  }
+}
