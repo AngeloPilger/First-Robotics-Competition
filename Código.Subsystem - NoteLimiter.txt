@@ -1,0 +1,48 @@
+package frc.robot.subsystems;
+
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+public class NoteLimiterSubsystem extends SubsystemBase {
+
+  private VictorSPX limitMotor = new VictorSPX(9); // Motor do Tecnil
+  private SensorSubsystem sensorSubsystem;
+  private Timer timer = new Timer();
+  private boolean isTimerActive = false;
+
+  public NoteLimiterSubsystem(SensorSubsystem sensorSubsystem) {
+    this.sensorSubsystem = sensorSubsystem;
+  }
+
+  public void noteLimiter() {
+    // Se o limite inferior não for atingido, inicie o motor
+    if (!sensorSubsystem.isDownLimitReached()) {
+      if (!isTimerActive) {
+        timer.start();
+        isTimerActive = true;
+      }
+      // Se o tempo for menor que 0.15s, o motor funcionará
+      if (timer.get() < 0.15) {
+        limitMotor.set(ControlMode.PercentOutput, 0.5);
+      } else {
+        limitMotor.set(ControlMode.PercentOutput, 0);
+        timer.stop();
+        isTimerActive = false;
+      }
+    } else {
+      // Se o limite inferior for atingido, pare o motor e reinicie o temporizador
+      limitMotor.set(ControlMode.PercentOutput, 0);
+      timer.stop();
+      timer.reset();
+      isTimerActive = false;
+    }
+    // Se o limite inferior for atingido, mova o motor para baixo até o limite do Tecnil
+    if (sensorSubsystem.isDownLimitReached()) {
+      while (sensorSubsystem.isTecniLimitReached()) {
+        limitMotor.set(ControlMode.PercentOutput, -0.5);
+      }
+    }
+  }
+}
