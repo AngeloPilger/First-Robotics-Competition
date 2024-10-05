@@ -3,68 +3,81 @@ package frc.robot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.subsystems.ArmSubsystem;
-import frc.robot.subsystems.IntakeSubsystem;
-import frc.robot.subsystems.LimiterSubsystem;
-import frc.robot.subsystems.SensorSubsystem;
 import frc.robot.subsystems.DrivetrainSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.SensorSubsystem;
+import frc.robot.subsystems.NoteLimiterSubsystem;
+import frc.robot.subsystems.AutonomousSubsystem;
 
 public class Robot extends TimedRobot {
 
-  private Joystick Joy = new Joystick(0);
+  private Joystick joystick = new Joystick(0);
 
-  private final DrivetrainSubsystem drivetrain = new DrivetrainSubsystem();
-  private final ArmSubsystem Arm = new ArmSubsystem();
-  private final IntakeSubsystem intake = new IntakeSubsystem();
-  private final LimiterSubsystem limiter = new LimiterSubsystem();
-  private final SensorSubsystem sensors = new SensorSubsystem();
+  private final SensorSubsystem sensorSubsystem = new SensorSubsystem(); // Sistema de sensores
+
+  private final DrivetrainSubsystem drivetrain = new DrivetrainSubsystem(); // Sistema de locomoção
+  private final ArmSubsystem arm = new ArmSubsystem(sensorSubsystem); // Sistema do braço
+  private final IntakeSubsystem intake = new IntakeSubsystem(sensorSubsystem); // Sistema de coleta
+  private final NoteLimiterSubsystem limiter = new NoteLimiterSubsystem(sensorSubsystem); // Sistema de limitação
+  private final AutonomousSubsystem autonomo = new AutonomousSubsystem(); // Sistema autônomo
 
   @Override
-  public void robotInit() {
-    sensors.periodic(); 
+  public void robotInit() {}
+
+  @Override
+  public void robotPeriodic() {
+    // Chamado a cada ciclo do robô; atualiza os dados do sensor
+    sensorSubsystem.periodic();
   }
 
   @Override
-  public void robotPeriodic() {}
+  public void autonomousInit() {
+    autonomo.startAutonomous(); // Inicia o modo autônomo
+  }
 
   @Override
-  public void autonomousInit() {}
-
-  @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    autonomo.periodic(); // Chama o controle autônomo a cada ciclo
+  }
 
   @Override
   public void teleopInit() {}
 
   @Override
   public void teleopPeriodic() {
-    controlMovement();
-    controlIntake();
-    controlArm();
-    controlNoteLimiter();
+    // Funções para o controle do robô no período teleoperado
+    controlMovement(); // Controla a movimentação
+    controlArm();      // Controla o Braço 
+    controlIntake();   // Controla o intake
+    controlLimiter();  // Controla o tecnil Limiter 
   }
 
   private void controlMovement() {
-    double speed = Joy.getRawAxis(1);
-    double rotation = Joy.getRawAxis(2);
-    double multiplier = Joy.getRawAxis(3);
-    boolean Get2 = Joy.getRawButton(2);
+    // Controle do movimento do robô
+    double speed = joystick.getRawAxis(1); // Eixo Y do joystick
+    double rotation = joystick.getRawAxis(2); // Eixo X do joystick
+    double multiplier = joystick.getRawAxis(3); // Multiplicador de velocidade
+    boolean get2 = joystick.getRawButton(2); // Botão adicional
 
-    drivetrain.drive(speed, rotation, multiplier, Get2);
-  }
-
-  private void controlIntake() {
-    boolean Get1 = Joy.getRawButton(1);
-    boolean Get3 = Joy.getRawButton(3);
-
-    intake.collect_pass(Get1, Get3);
+    drivetrain.drive(speed, rotation, multiplier, get2); // Comando de locomoção
   }
 
   private void controlArm() {
-    int pov = Joy.getPOV(0);
-    Arm.moveArm(pov);
+    // Controle do braço do robô
+    int pov = joystick.getPOV(0); // Posição do POV do joystick
+    arm.moveArm(pov); // Comando para mover o braço
   }
 
-  private void controlNoteLimiter() {
-    limiter.noteLimiter();
+  private void controlIntake() {
+    // Controle do sistema de coleta
+    boolean get1 = joystick.getRawButton(1); // Botão para coletar
+    boolean get3 = joystick.getRawButton(3); // Botão para passar
+
+    intake.collect_pass(get1, get3); // Comando para coleta ou passagem
+  }
+
+  private void controlLimiter() {
+    // Controle do sistema de limitação
+    limiter.noteLimiter(); // Comando para o sistema de limitação
   }
 }
