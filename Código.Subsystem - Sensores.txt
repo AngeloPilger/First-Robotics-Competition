@@ -1,27 +1,38 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class SensorSubsystem extends SubsystemBase {
-  private DigitalInput upLimitSwitch;
-  private DigitalInput downLimitSwitch;
-  private DigitalInput collectSwitch;
-  private DigitalInput tecniLimitSwitch;
 
-  public void sensorDisplay(int upLimitSwitchPort, int downLimitSwitchPort, int collectSwitchPort, int tecniLimitSwitchPort) {
-    this.upLimitSwitch = new DigitalInput(upLimitSwitchPort);
-    this.downLimitSwitch = new DigitalInput(downLimitSwitchPort);
-    this.collectSwitch = new DigitalInput(collectSwitchPort);
-    this.tecniLimitSwitch = new DigitalInput(tecniLimitSwitchPort);
+  private DigitalInput upLimitSwitch = new DigitalInput(0);    // Sensor do limite superior
+  private DigitalInput downLimitSwitch = new DigitalInput(1);  // Sensor do limite inferior
+  private DigitalInput collectSwitch = new DigitalInput(2);    // Sensor de coleta
+  private DigitalInput tecniLimitSwitch = new DigitalInput(3); // Sensor do tecnil
+  
+  public boolean isUpLimitReached() {
+    return upLimitSwitch.get();
+  }
+
+  public boolean isDownLimitReached() {
+    return downLimitSwitch.get();
+  }
+
+  public boolean isTecniLimitReached() {
+    return tecniLimitSwitch.get();
+  }
+
+  public boolean isCollectSwitchActive() {
+    return collectSwitch.get();
   }
 
   @Override
   public void periodic() {
-    SmartDashboard.putBoolean("COLETA", collectSwitch.get());
-    SmartDashboard.putBoolean("TECNIL", tecniLimitSwitch.get());
-    SmartDashboard.putBoolean("ERGUIDO", upLimitSwitch.get());
-    SmartDashboard.putBoolean("ABAIXADO", downLimitSwitch.get());
+    // Atualiza a SmartDashboard com o estado dos sensores em cada ciclo de execução
+    SmartDashboard.putBoolean("COLETA", isCollectSwitchActive());
+    SmartDashboard.putBoolean("TECNIL", isTecniLimitReached());
+    SmartDashboard.putBoolean("ERGUIDO", isUpLimitReached());
+    SmartDashboard.putBoolean("ABAIXADO", isDownLimitReached());
   }
 }
